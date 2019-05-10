@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>脏数据处理 - 记忆学习</title>
+<link rel="shortcut icon" href="/BL/public/static/img/remember/help.png" type="image/x-icon">
+<link rel="stylesheet" href="__CSS__/ireset.css">
+<link rel="stylesheet" href="__CSS__/jquery.jgrowl.css">
+<link rel="stylesheet" href="__STATIC__/layui/css/layui.css">
+<style type="text/css">
+	body {background-color: #fff; font: 13px/20px normal Helvetica, Arial, sans-serif; color: #4F5155; }
+	/*#top {position: fixed; top: 0; left: 0; width: 100%; background: #dedede; height: 300px; }*/
+	.fixbox { background: #eee; margin: 50px 80px; box-shadow: 4px 4px 10px #000; z-index: 99990;}
+	.fixbox #info {float: right; margin-right: 150px;}
+	.fixbox .tools {height: 38px;}
+	.fixbox button {padding: 0 10px; height: 30px; vertical-align: bottom;}
+	.fixbox pre {display: inline-block; /*width: 500px;*/ }
+
+	.fix_btn{position: fixed; right: 0; top: 0; z-index: 99999; }
+
+	#input_b, #input_desc {width:500px; height: 80px; }
+
+	.tags span {float: right; }
+	.s1{margin-right:20px; }
+	.s2{margin-right:20px; }
+	.w100 {width: 100px; display: inline-block;}
+
+	#searchCandidate {position: absolute; left: 600px; top:0; background: #ff0; max-height: 350px; overflow-y: auto; }
+
+	#container{margin: 10px 310px 10px 10px; padding: 15px; border: 1px solid #D0D0D0; background: #444; }
+	/*#container ul{display:block; background:#dcdcdc; color:#333; }*/
+	#container li{height: 26px; }
+	.rand {text-align: center; background: #000;}
+	.rand h2 {font-size: 22px; line-height: 32px; color:#fff; padding: 60px 0 10px}
+	.rand p {margin:5px 0;}
+	.rand .input {height: 40px; width: 350px; font-family: Lucida Sans Unicode; font-size: 25px;}
+	.rand button {padding: 6px 25px; }
+
+	.rand .tips {width:320px; min-height: 150px; margin: 10px auto; text-align: left; color: #fff;}
+
+	/* 标签信息 */
+	span.tag, .tags > span {color: #666; border: 1px solid #ccc; padding: 2px 5px; font-size: 12px; line-height: 16px; font-weight: 400; border-radius: 2px; margin-right: 5px; }
+
+	#act_id {width: 50px; }
+
+	#input_source {color: red;}
+</style>
+<script src="__JS__/jquery2.min.js"></script>
+<script src="__JS__/jquery.jgrowl.min.js"></script>
+<script src="__STATIC__/layui/layui.js"></script>
+<!-- 保存提示消息 -->
+<script type="text/javascript" charset="utf-8">
+
+	// 更新
+	function update(){
+		var obj = {};
+		obj.id = $('#act_id').val();
+		obj.a = $('#input_a').val();
+		obj.b = $('#input_b').val();
+		obj.c = $('#input_c').val();
+		obj.description = $('#input_desc').val();
+		obj.type = $('#input_type').val();
+		obj.source = $('#input_source').val();
+		if(obj.a){
+			$.post('__SITE_URL__/Remember/Base/update', obj, function(d) {
+				if(d=='1'){
+					// alert('ok!')
+					location.reload();
+					
+					// $('#act_id').val('');
+					// $('#input_a').val('');
+					// $('#input_b').val('');
+					// $('#input_c').val('');
+					// $('#input_desc').val('');
+					// $('#extr').text('');
+					
+					// finishClearOneName()
+				}else{
+					alert('error!!!!!!!!!!!!!!!!!!!!!')
+				}
+			})
+		}
+		// xmlhttp.open("GET","__SITE_URL__/English/ajax_word_rand",false);
+	}
+
+	// 数据库检索
+	function query() {
+
+		// console.log('clear!!!!!!!!!')
+		console.log('query ==>', $('#input_a').val());
+
+		$('#act_id').val('');
+		$('#input_b').val('');
+		$('#input_c').val('');
+		$('#input_desc').val('');
+		$('#extr').text('');
+
+		var obj = {};
+		obj.query = $('#input_a').val();
+		if (obj.query) {
+			$.post('__SITE_URL__/Remember/Base/query', obj, function(d) {
+				var str = '';
+				for (var i = 0; i < d.length; i++) {
+					str = str + '<li>' + d[i].a + ' [' + d[i].c + '] ' + d[i].b + '</li>'
+
+					if (d[i].a == obj.query) {
+						console.log('show!', d[i])
+						$('#act_id').val(d[i].id);
+						$('#input_b').val(d[i].b);
+						$('#input_c').val(d[i].c);
+						$('#input_desc').val(d[i].description);
+						$('#input_source').val(d[i].source);
+						$('#extr').text(d[i].b2);
+
+						// $.get('__SITE_URL__/LTag/Index/listObjTags?objId='+ d[i].id +'&appId=6', function(d){
+						// 	console.log(d);
+						// })
+					}
+				}
+				$('#searchCandidate').html(str);
+				// console.log(d[0])
+			})
+		}
+	}
+
+	// 有道 API 查询
+	function api() {
+		var q = $('#input_a').val();
+		$.get('__SITE_URL__/Remember/Base/youdao_api?q=' + q, function (d) {
+			console.log(d);
+			$('#input_c').val(d['us-phonetic-symbol']);
+			var content = '';
+			if (d['custom-translation']) {
+				// console.log('len====>', sizeof(d['custom-translation']['translation']))
+				if (d['custom-translation']['translation'].length) {
+					for(var i=0; i < d['custom-translation']['translation'].length; i++){
+						content = content + d['custom-translation']['translation'][i]['content'] + "\r\n";
+					}
+				} else {
+					content = d['custom-translation']['translation']['content'];
+				}
+				
+				$('#input_b').val(content);
+			} else {
+				$.jGrowl("无查询结果！", {life: 1000, speed:'slow'});
+			}
+		})
+	}
+
+	// 全局快捷键
+	document.onkeypress = function(e) {
+		// console.log(e.keyCode)
+		
+		// Ctrl + Y 快速入库、
+		if(e.keyCode==9){
+			enter();
+		}
+
+		// Ctrl + I 有道查询
+		if(e.keyCode==25){
+			api();
+		}
+	}
+
+	function detail() {
+		if(event.keyCode != 13){return;}
+		
+		var id = $('#act_id').val();
+		if (id) {
+			window.open("__SITE_URL__/Remember/English/detail?id=" + id);
+		}
+	}
+</script>
+</head>
+<body>
+
+<!-- 为了删除解释中的人名建立的临时功能 -->
+<style>
+	#temp {
+		position: fixed;
+		z-index: 99991;
+		color: #9914e2;
+		left: 10px;
+		top: 50px;
+		width: 68px;
+		background: #ccc;
+
+		/*display: none;*/
+	}
+</style>
+<div id="temp">
+	<ul>
+		<?php foreach($listDirtyEnglish as $k => $row):?>
+			<li>{$row['a']}</li>
+		<?php endforeach; ?>	
+	</ul>
+	<script>
+		$('#temp li').click(function () {
+			$('#input_a').val(this.innerText);
+			query();
+		});
+
+		// 处理完一个
+		function finishClearOneName() {
+			$('#temp li').first().remove();
+			$('#input_a').val($('#temp li').first().text());
+			query();
+		}
+
+		function clearname() {
+			$('#input_b').val( $('#input_b').val().replace( $('#input_b').val().match(/\n(.*?)\)人名(.*?)\n/)[0],'\n' ) )
+		}
+	</script>
+</div>
+
+<div class="fixbox">
+		
+	<div class="tools">
+		<button onclick="api()">API</button>
+		<button onclick="clearname()"></button>
+		<button onclick="update()">更新</button>
+		<input type="text" id="act_id" disabled>
+		<button onclick="enter()">录入</button>
+	</div>
+	
+	<span class="w100">a（书面）:</span><input type="text" id="input_a" autofocus="autofocus" oninput="query()" onkeypress="detail()">
+	c（发音）:<input type="text" id="input_c">
+	<br>
+
+	<ul id="searchCandidate">...</ul>
+	<span class="w100">b（解释）:</span><textarea id="input_b"></textarea>
+	<br>
+
+	<span class="w100"></span><pre id="extr"></pre>
+	<br>
+
+	<span class="w100">desc（例句）:</span><textarea id="input_desc"></textarea>
+	<br>
+
+	<span class="w100">类型:</span><input id="input_type" value="英语单词">
+	<span>英语单词</span>
+	<br>
+
+	<span class="w100">来源:</span><input id="input_source" value="">
+	<span>lsx_rm lsx_cj1 lsx_cj2 lsx_zj lsx_gj</span>
+	<br>
+</div>
+</body>
+</html>

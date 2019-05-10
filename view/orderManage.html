@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title><?=$title?></title>
+<link rel="stylesheet" href="__CSS__/bootstrap.min.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="__CSS__/drag.css" type="text/css" media="screen" />
+<style type="text/css">
+	body {font: 13px/20px normal Helvetica, Arial, sans-serif; color: #5F6165; }
+	.fixedbox {position: fixed; z-index:99999; bottom:80px; right: 50px; background:#eee; padding: 10px 20px; border: 1px solid #D0D0D0; box-shadow: 0 0 8px #D0D0D0; opacity:0.7; color: blue;}
+	#container{padding: 10px;}
+	#container h1{font-size: 28px; margin:0;}
+	#tags_area2 .btn{margin-right: 5px;}
+	.tagbtn{font-size: 14px; margin: 1px 0px 1px 0; padding: 4px 4px; line-height: 12px; }
+	.queue {margin-top: 2px; border-color: #C1C1C1;}
+	.color_1 {border-color: #FF00FF; color:#FF00FF;}
+	.color_2 {border-color: #22BB92; color:#22BB92;}
+	.color_9 {border-color: #CCCCCC; color:#CCCCCC;}
+	.color_99 {border-color: #FF0000; color:#FF0000;}
+
+	#quicktag_box {background:#f3f3f3;}
+	#quicktag_box .act {background:#2F8095; color:#fff}
+	#quicktag_box .btn-default:hover{background-color: none;}
+</style>
+<script src="__JS__/jquery2.min.js"></script>
+<script src="__JS__/drag.js"></script>
+<script>
+	$.ajaxSetup({async: false});  // 同步模式
+
+	// 强制指定排序
+	function setListorder(){
+		var listorder = $('#input-listorder').val();
+		var tag_id = $('#actTagid').val();
+		$.get('SITE_URLapi/sortRawTag/'+ tag_id +'/1'+ listorder, function(d){
+			console.log(d)
+			location.reload();
+		});
+	}
+
+	// 强制指定新行
+	function setRowOrder(){
+		var roworder = $('#input-roworder').val();
+		var tag_id = $('#actTagid').val();
+		$('.queue').eq(roworder).before('<div class="queue"></div>')
+		$('.queue').eq(roworder).prepend($('.btnid_'+ tag_id))
+	}
+
+	// 保存排序
+	function save() {
+		var arr = new Array();
+		
+		$.each(queueContainer.find('.queue'), function(index, value){
+			elements = $(value).find('.dragger');
+			$.each(elements, function(_index, _value){			
+				console.log($(_value).data('tag_id'), $(_value).text(),'['+"1"+ (index<10?'0'+index:index) + (_index<10?'0'+_index:_index)+']');
+				arr.push({"tag_id":$(_value).data('tag_id'), "listorder":"1"+ (index<10?'0'+index:index) + (_index<10?'0'+_index:_index) })
+			});
+		});
+
+		var obj = {};
+		// console.log(obj);
+		obj.bookId = <?=$bookId?>;			// ？？？？？？？？？？？？？？？？？？？
+		obj.data = arr;
+		// obj.data = ['aaa','bbb'];
+		$.post('__SITE_URL__/Remember/English/sortAllTag', obj, function(d){
+			console.log(d)
+		});
+	}
+</script>
+</head>
+<body>
+<div class="fixedbox">
+	当前 tag_id：<input id="actTagid" type="text" disabled><br>
+	<input id="input-tagname" type="text"><br>
+	<input id="input-listorder" type="text"><button onclick="setListorder()">设置 listorder 值</button><br>
+	<input id="input-roworder" type="text"><button onclick="setRowOrder()">强制指定新行</button><br>
+	<!-- <button coclick="xx">*删除（tag/tag_circle_data/tag_data）</button><br> -->
+	<!-- <button onclick="xx()">*设为扩展标签</button><br> -->
+	<button onclick="save()">保存</button><br>
+	<a target="_blank" href="__SITE_URL__/ltag/index/tag2tag">合并</a>
+</div>
+<div id="container">
+	<!-- 参考标签 -->
+	<div id="quicktag_box">
+		<div class="queue">
+<?php $flag=0; $t=-999;?>
+<?php foreach($hottags as $tag1){ ?>
+<?php if((int)($tag1['listorder']/100)>(int)$t/100 && $flag++){ ?>
+		</div>
+		<div class="queue">
+<?php }?>
+			<button class="btn btn-default dragger tagbtn btnid_<?=$tag1['obj_id']?>" data-tag_id='<?=$tag1['obj_id']?>'><?=$tag1['a']?><br><span style="display:;color:#eee;font-weight: normal;font-size: 9px;"><?=substr($tag1['listorder'],1)?></span></button>
+<?php $t=$tag1['listorder']; ?>
+<?php }?>
+		</div>
+	</div>
+	<script>
+		registerDrag($('#quicktag_box'));
+	</script>
+</div>
+</body>
+</html>

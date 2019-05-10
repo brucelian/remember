@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>洗牌记忆</title>
+<link rel="shortcut icon" href="/BL/public/static/img/remember/help.png" type="image/x-icon">
+<link rel="stylesheet" href="__CSS__/ireset.css">
+<link rel="stylesheet" href="__STATIC__/layui/css/layui.css">
+<link rel="stylesheet" href="__STATIC__/css/remember/shuffle.css">
+<script src="__JS__/jquery2.min.js"></script>
+<script src="__STATIC__/layui/layui.js"></script>
+<script src="__STATIC__/js/remember/common.js"></script>
+<script>
+	//定义js中的url路径
+	var site_url = '__SITE_URL__';
+	var mp3_path = '__STATIC__/mp3/English/';
+	var supply_url = (<?=$bookId ? 1 : 0?> ? '__SITE_URL__/Remember/English/listBookWord' : '__SITE_URL__/Remember/English/listRand');
+	var bookId = <?=($bookId ? $bookId : 'null')?>;
+	var tagidArr = [<?php 
+	if($tag_ids){
+		$arr = explode("_", $tag_ids); 
+		echo implode(",", $arr);
+	} 
+	?>];
+</script>
+</head>
+<body>
+<input type="hidden" id="act_id">
+<audio id="audio" src="" loop preload autoplay></audio>
+<button id="zhanBtn" onclick="zhan()">斩</button>
+<button id="daiBtn" onclick="dai()">待</button>
+
+<!-- 最近新增 -->
+<div id="side">
+	<button onclick="change()">撤销</button>
+	<h3></h3>
+	<div id="bottom">
+		<ul></ul>
+	</div>
+</div>
+
+<div id="side-right">
+	<div>
+		<!-- 第1次 -->
+		<h3>初次见面</h3>
+		<div id="">		
+			<?php foreach($all_words as $row):?>
+			<?php if($row['v']==90):?>
+			<ul id="ul_">
+				<span style="width:100px;"><?=$row['a']?></span>
+				<span style="width:200px;"><?=$row['b']?></span>
+				<span class="s1"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 1)">努力记住了（到1）</a></span>
+				<span class="s3"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 10)">pass</a></span>
+				<span><input type="text" name="" value=""></span>
+				<span style="width:300px; overflow: hidden;"><?=$row['description']?></span>
+			</ul>
+			<?php endif;?>
+			<?php endforeach;?>
+		</div>
+
+		<!-- 第2次 -->
+		<h3>很高兴再次见到你（24小时后可见） xx个</h3>
+		<div id="">		
+			<?php foreach($all_words as $row):?>
+			<?php if($row['v']==8989891 && (time()-$row['lasttime'])>3600*24):?>
+			<ul id="ul_">
+				<span style="width:100px;"><?=$row['a']?></span>
+				<span style="width:200px;color:#dcdcdc"><?=$row['b']?></span>
+				<span class="s1"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 2)">还记得喔（到2）</a></span>
+				<span class="s1"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 0)">记不清（回0）</a></span>
+				<span class="s3"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 10)">pass</a></span>
+				<span><input type="text" name="" value=""></span>
+				<span style="width:300px;color:#dcdcdc;overflow: hidden;"><?=$row['description']?></span>
+			</ul>
+			<?php endif;?>
+			<?php endforeach;?>
+		</div>
+
+		<!-- 第3次 -->
+		<h3>巩固（7天后可见）</h3>	
+		<div id="">
+			<?php foreach($all_words as $row):?>
+			<?php if($row['v']==8989892 && (time()-$row['lasttime'])>3600*24*7):?>
+			<ul>
+				<span style="width:100px;"><?=$row['a']?></span>
+				<span style="width:200px;"><?=$row['b']?></span>
+				<span class="s1"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 3)">还记得喔（到3）</a></span>
+				<span class="s1"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 1)">记不太清（回1）</a></span>
+				<span class="s1"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 0)">没印象了（回0）</a></span>
+				<span class="s3"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 10)">pass</a></span>
+				<span><input type="text" name="" value=""></span>
+				<span style="width:300px;color:#dcdcdc;overflow: hidden;"><?=$row['description']?></span>
+			</ul>
+			<?php endif;?>
+			<?php endforeach;?>
+		</div>
+
+		<!-- 第4次 -->
+		<h3>再次巩固（30天后可见）</h3>	
+		<div id="">
+			<?php foreach($all_words as $row):?>
+			<?php if($row['v']==8989893 && (time()-$row['lasttime'])>3600*24*30):?>
+			<ul>
+				<span style="width:100px;"><?=$row['a']?></span>
+				<span style="width:200px;"><?=$row['b']?></span>
+				<span class="s1"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 4)">还记得喔（到4）</a></span>
+				<span class="s1"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 2)">记不太清（回2）</a></span>
+				<span class="s1"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 0)">没印象了（回0）</a></span>
+				<span class="s3"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 10)">pass</a></span>
+				<span><input type="text" name="" value=""></span>
+				<span style="width:300px;color:#dcdcdc;overflow: hidden;"><?=$row['description']?></span>
+			</ul>
+			<?php endif;?>
+			<?php endforeach;?>
+		</div>
+
+		<!-- 第5次 -->
+		<h3>胜利就在前方（6个月后可见）</h3>	
+		<div id="">
+			<?php foreach($all_words as $row):?>
+			<?php if($row['v']==8989894 && (time()-$row['lasttime'])>3600*24*183):?>
+			<ul>
+				<span style="width:100px;"><?=$row['a']?></span>
+				<span style="width:200px;"><?=$row['b']?></span>
+				<span class="s1"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 10)">还记得喔（到5）</a></span>
+				<span class="s1"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 3)">记不太清（回3）</a></span>
+				<span class="s1"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 0)">没印象了（回0）</a></span>
+				<span class="s3"><a href="javascript:void(0);" onClick="level(this, <?=$row['id']?>, 10)">pass</a></span>
+				<span><input type="text" name="" value=""></span>
+				<span style="width:300px;color:#dcdcdc;overflow: hidden;"><?=$row['description']?></span>
+			</ul>
+			<?php endif;?>
+			<?php endforeach;?>
+		</div>
+
+		<h3 style="color:green;">恭喜，您已掌握：<?=isset($numArr2[0])?$numArr2[0]:'0'?></h3>
+		<!-- <div id="" style="overflow:auto;width:900px;height:600px;">
+			<?php foreach($all_words as $row):?>
+			<?php if($row['v']==898985):?>
+			<ul>
+				<span style="width:100px;"><?=$row['a']?></span>
+				<span style="width:200px;"><?=$row['b']?></span>
+				<span>开始时间 总次数 忘记次数</span>		
+			</ul>
+			<?php endif;?>
+			<?php endforeach;?>
+		</div> -->
+	</div>
+</div>
+<div id="container">
+	<!-- 随机出题 -->
+	<div class="rand">
+		<h2><span id="time">0</span> 秒</h2>
+		<div id="show">
+			<p id="word"></p>
+			<p id="symbol"></p>
+		</div>
+		<pre id="tips"></pre>
+		<div>
+			<button onclick="hit(0);">认　识</button>
+			<button onclick="hit(1);">不认识</button>
+		</div>
+
+		<br><br><br>
+
+		<!-- button onclick="document.getElementById('audio').play()">播放</button -->
+
+		<a target="_blank" href="__SITE_URL__/Remember/English/scoreByLog">评估权重</a>
+		<div id="count"></div>
+
+		<ul>
+			<li style="width:100px;">今日总数：xxx</li>
+			<li style="width:100px;">掌握：xxx</li>
+			<li style="width:100px;">新认识：xxx</li>
+			<li style="width:100px;">巩固：xxx</li>	
+		</ul>
+	</div>
+</div>
+</body>
+</html>

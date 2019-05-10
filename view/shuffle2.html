@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>音图文 -洗牌记忆</title>
+<link rel="shortcut icon" href="/BL/public/static/img/remember/help.png" type="image/x-icon">
+<link rel="stylesheet" href="__CSS__/ireset.css">
+<link rel="stylesheet" href="__STATIC__/layui/css/layui.css">
+<link rel="stylesheet" href="__STATIC__/css/remember/shuffle.css">
+<script src="__JS__/jquery2.min.js"></script>
+<script src="__STATIC__/layui/layui.js"></script>
+<script src="__STATIC__/js/remember/common.js"></script>
+<script>
+	//定义js中的url路径
+	var site_url = '__SITE_URL__';
+	var mp3_path = '__STATIC__/mp3/English/';
+	var supply_url = (<?=$bookId ? 1 : 0?> ? '__SITE_URL__/Remember/English/listBookWord' : '__SITE_URL__/Remember/English/listRand');
+	var bookId = <?=($bookId ? $bookId : 'null')?>;
+	var tagidArr = [<?php 
+	if($tag_ids){
+		$arr = explode("_", $tag_ids); 
+		echo implode(",", $arr);
+	} 
+	?>];
+
+	// 重写
+	function render(result) {
+		console.log('aa');
+		$('#tips').text('');
+		$('#time').text(0);
+
+		intervalId = setInterval(function () {
+			TMR++;
+			$('#time').text(TMR);
+		},1000);
+
+
+		act_json = result;
+		console.log('result',result);
+		$('#act_id').val(result.id);
+		$('#word').text(result.a);
+		
+		var c = result.c ? ('    /'+ result.c + '/') : ''
+		$('#symbol').text(c);
+
+		var i = parseInt(Math.random()*(result.bcz.graphicExamples.length));
+		$('#graphicExample').html(
+			result.bcz.graphicExamples[i][0] + '<br>' 
+			+ (result.bcz.graphicExamples[i][3] ? ('<img src="http://ali.bczcdn.com'+ result.bcz.graphicExamples[i][3] +'">') : '') + '<br>' 
+			+ result.bcz.graphicExamples[i][1]);
+
+		// 播放音频
+		$('#audio2').attr('src', 'http://ali.bczcdn.com'+ result.bcz.graphicExamples[i][4]);
+
+
+		// document.getElementById('audio').play();
+	}
+
+	// 重写
+	function hit(flag) {
+		duration = $('#time').text();
+		
+		clearInterval(intervalId);
+		TMR = 0;
+
+		// 0 简单（默认） 2 需提示 4 记错（单独接口）6 完全没印象
+		if (flag > 0){
+			if($('#tips').text()=='') {
+				// 需提示
+				if(act_json.description){
+					$('#tips').text('提示：\n' + act_json.description);
+					state = 2;
+					return;
+				} else {
+					// $('#tips').text('（无提示）');
+					state = 5;
+				}
+			} else {
+				// 有提示也记不起来（完全没印象）
+				state = 6;
+			}
+		}
+
+		// // 存入 Log 数据库
+		// $.get(site_url + '/Remember/English/flagEnglish?id='+ act_json.id +'&state='+ state +'&duration='+ duration, function(d) {
+		// 	console.log('Log:', d)
+		// 	insertLogId = d;
+		// 	lastObjId = act_json.id;
+		// 	// console.log(act_json)
+		// })
+
+		$('#tips').text(act_json.b);
+
+		// 加入日志栏
+		showLog(state, );
+
+		// 一定时间后自动关闭页面
+		setTimeout("next()", 800);
+	}
+</script>
+</head>
+<body>
+<input type="hidden" id="act_id">
+<audio id="audio" src="" loop preload autoplay></audio>
+<audio id="audio2" src="" loop preload autoplay></audio>
+<button id="zhanBtn" onclick="zhan()">斩</button>
+<button id="daiBtn" onclick="dai()">待</button>
+
+<!-- 最近新增 -->
+<div id="side">
+	<button onclick="change()">撤销</button>
+	<h3></h3>
+	<div id="bottom">
+		<ul></ul>
+	</div>
+</div>
+
+<div id="side-right">
+</div>
+<div id="container">
+	<!-- 随机出题 -->
+	<div class="rand">
+		<h2><span id="time">0</span> 秒</h2>
+		<div id="show">
+			<p id="word"></p>
+			<p id="symbol"></p>
+			<style>
+				#graphicExample {color: #fff;}
+				#graphicExample img{height: 320px;}
+			</style>
+			<p id="graphicExample"></p>
+		</div>
+		<pre id="tips"></pre>
+		<div>
+			<button onclick="hit(0);">认　识</button>
+			<button onclick="hit(1);">不认识</button>
+		</div>
+
+		<br><br><br>
+
+		<!-- button onclick="document.getElementById('audio').play()">播放</button -->
+
+		<a target="_blank" href="__SITE_URL__/Remember/English/scoreByLog">评估权重</a>
+		<div id="count"></div>
+
+		<ul>
+			<li style="width:100px;">今日总数：xxx</li>
+			<li style="width:100px;">掌握：xxx</li>
+			<li style="width:100px;">新认识：xxx</li>
+			<li style="width:100px;">巩固：xxx</li>	
+		</ul>
+	</div>
+</div>
+</body>
+</html>

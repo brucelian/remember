@@ -1,0 +1,374 @@
+<?php
+	// 创建 百词斩二进制数据解析类
+	$Baicizhan = new \Baicizhan($detailata['bcz']);
+?>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title><?=$detailata['a']?> 详情 - 记忆学习</title>
+<link rel="shortcut icon" href="/BL/public/static/img/remember/help.png" type="image/x-icon">
+<link rel="stylesheet" href="__CSS__/ireset.css">
+<link rel="stylesheet" href="__STATIC__/layui/css/layui.css">
+<style type="text/css">
+	body {background-color: #fff; margin: 10px; font: 13px/20px normal Helvetica, Arial, sans-serif; color: #4F5155; }
+	
+	#container{
+		margin: 10px 0;
+		padding: 15px;
+		border: 1px solid #D0D0D0;
+		background: #f7f7f7;
+	}
+
+	#fixbox button {width: 30px;}
+
+	pre#detail {width: 90%; overflow-x: scroll;}
+
+	#container ul{display:block; background:#dcdcdc; color:#333; }
+
+	#container li{display:inline-block; }
+
+	.fixbox .tools {height: 38px; margin-left: 65px;}
+	.fixbox button {padding: 0 10px; height: 30px;}
+	.fixbox pre {display: inline-block; width: 250px; vertical-align: top;}
+
+	textarea {width:260px; height: 140px;}
+	#input_desc {color: red; width: 524px;}
+
+	.tags span {float: right; }
+	.s1{margin-right:20px; }
+	.s2{margin-right:20px; }
+	.w100 {width: 65px; display: inline-block;}
+	.h5 {margin: 5px 0;}
+
+	/* 标签信息 */
+	span.tag {color: #FFF; background: #2F8095; border-radius: 4px; padding: 2px 5px; font-size: 12px; line-height: 16px; font-weight: 400; margin-right: 5px; }
+
+	/* 参考标签 */
+	#quicktag_box .queue{margin-top: 5px;}
+	#quicktag_box .tagbtn{font-size: 14px; margin: 2px 2px 2px 0; padding: 0 2px}
+	#quicktag_box .color_1 {border-color: #FF00FF; color:#FF00FF;}
+	#quicktag_box .color_2 {border-color: #22BB92; color:#22BB92;}
+	#quicktag_box .color_9 {border-color: #BBBBBB; color:#BBBBBB;}
+	#quicktag_box .color_99 {border-color: #FF0000; color:#FF0000;}
+	#quicktag_box .act {background:#2F8095; color:#fff}
+	#quicktag_box .btn-default:hover{background-color: none;}
+
+	.img img{
+		height: 225px;
+	}
+</style>
+<script src="__JS__/jquery2.min.js"></script>
+<script src="__STATIC__/layui/layui.js"></script>
+<script src="__JS__/ltag.js"></script>
+<script type="text/javascript" charset="utf-8">
+	var ltag = new Ltag({
+		"insert_tag_url":    "__SITE_URL__/ltag/index/insertTag",
+		"insert_circle_url": "__SITE_URL__/ltag/index/insertTagCircle",
+		"insert_objtag_url": "__SITE_URL__/ltag/index/insertObjTag",
+		"delete_objtag_url": "__SITE_URL__/ltag/index/deleteObjTag",
+		"app_id":    6,				// ？？？？？？？？？？？？？？？？？
+		"circle_id": 6
+	});
+
+	// 离开页面静音
+	window.onblur = function () {
+		console.log('mute-->', $('audio')[i])
+		for(var i=0; i < $('audio').length; i++){
+		  $('audio')[i].muted = true;
+		}
+	}
+	window.onfocus = function () {
+		console.log('unmute-->', $('audio')[i])
+		for(var i=0; i < $('audio').length; i++){
+		  $('audio')[i].muted = false;
+		}
+	}
+
+	$(document).ready(function(){
+		$('.tagbtn').click(function(){
+			if($(this).hasClass('act')){
+				console.log('del')
+				ltag.del_tags(this)
+			}else{
+				console.log('add')
+				ltag.quickAddTags(this)
+			}
+		})
+
+		// 注册【添加标签】监听函数
+		$('#tags-input').blur(function(){
+			ltag.add_tags(this)
+		})
+	})
+
+	// 修改记忆度
+	function level(id, v){
+		$.get('__SITE_URL__/Remember/English/updateV?id='+ id +'&v='+ v, function(d) {
+			if(d==1){
+				location.reload();
+			}
+		})
+	}
+
+	// 有道 API 查询
+	function api() {
+		var q = $('#input_a').val();
+		$.get('__SITE_URL__/Remember/Base/youdao_api?q=' + q, function (d) {
+			console.log(d);
+			$('#input_c').val(d['us-phonetic-symbol']);
+			var content = '';
+			// console.log('len====>', sizeof(d['custom-translation']['translation']))
+			if (d['custom-translation']['translation'].length) {
+				for(var i=0; i < d['custom-translation']['translation'].length; i++){
+					content = content + d['custom-translation']['translation'][i]['content'] + "\r\n";
+				}
+			} else {
+				content = d['custom-translation']['translation']['content'];
+			}
+			
+			$('#input_b').val(content);
+		})
+	}
+
+	// 更新
+ 	function update(){
+
+ 		$('#updateBtn').css('background','red')
+
+ 		var obj = {};
+ 		obj.id = <?=$detailata['id']?>;
+ 		obj.a = $('#input_a').val();
+ 		obj.b = $('#input_b').val();
+ 		obj.b2 = $('#input_b2').val();
+ 		obj.b3 = $('#input_b3').val();
+ 		obj.c = $('#input_c').val();
+ 		obj.description = $('#input_desc').val();
+ 		obj.type = $('#input_type').val();
+ 		obj.source = $('#input_source').val();
+ 		if(obj.a){
+ 			$.post('__SITE_URL__/Remember/Base/update', obj, function(d) {
+ 				if(d==1){
+ 					$('#updateBtn').css('background','#ddd')
+ 					location.reload
+ 				}else{
+ 					alert('error!!!!!!!!!!!!!!!!!!!!!')
+ 				}
+ 			})
+ 		}
+ 	}
+
+	// 删除记录
+	function del() {
+		if(confirm("确实要删除吗?")){
+			$.get('__SITE_URL__/Remember/Base/remove?id=<?=$detailata['id']?>', function (d) {
+				console.log(d);
+				if (d==1) {
+					window.close();
+				}
+			})
+		}
+	}
+
+	// 清除人名释义
+	function clearname() {
+		$('#input_b').val($('#input_b').val().replace( $('#input_b').val().match(/\n(.*?)\)人名(.*?)\n/)[0],'\n'));
+	}
+</script>
+</head>
+<body>
+<audio id="audio" src="<?=($detailata['local_audio'] ? '__STATIC__/mp3/English/'.$detailata['local_audio'] : $detailata['us_audio'])?>" autoplay preload loop></audio>
+<div id="container">
+	<!-- 右侧 -->
+	<div style="float: right; width: 980px;">
+		<div id="quicktag_box">
+			<div class="queue">
+			<?php $flag=0;?>
+			<?php foreach($quicktag as $tag1){ ?>
+				<?php if($tag1['listorder']%100==0 && $flag++){ ?>
+			</div>
+			<div class="queue">
+				<?php }?>
+				<button class="btn btn-default tagbtn btnid_<?=$tag1['tag_id']?> color_<?=$tag1['color'];?>" data-tag_id='<?=$tag1['tag_id']?>'><?=$tag1['tagname']?></button>
+			<?php }?>
+			</div>
+	    </div>
+	    <script type="text/javascript">
+		 	// 将tag染色
+		 	var t1 = "<?php foreach($tags as $k=>$v){echo $v['tag_id'].'|';}?>";
+			var t2 = t1.split('|');
+		 	for(var i in t2){
+		 		$('.btnid_'+ t2[i]).addClass('act')
+		 	}
+		</script>
+
+		<br><br>
+
+		<ul class="img">
+		<?php // 图文例句
+			foreach ($Baicizhan->listGraphicExample() as $k => $v) { ?>
+			<li>
+				<?=str_replace($v[2]['data'], '<span style="background:yellow;">'.$v[2]['data'].'</span>', $v[0]['data'])?><br>
+				<?=$v[1]['data']?><br>
+				<audio controls preload loop src="http://ali.bczcdn.com<?=$v[4]['data']?>"></audio><br>
+				<img src='<?=$v[3]['data'] ? "http://ali.bczcdn.com".$v[3]['data']: ""?>'>
+			</li>
+		<?php } ?>
+		</ul>
+
+		<style>
+			.img li {float: left; margin-right: 20px;}
+			.phrase {border:1px solid #ddd;}
+		</style>
+	</div>
+
+	<!-- 标签信息 -->
+	<div class="navbar-form" id="tags_area2">
+		<input type="hidden" id="id" name="id" value="<?=$detailata['id']?>" />
+		<button onclick="del()">删除</button>
+		<b>[ <?=$detailata['a']?> ]</b>
+		<span id="fixbox">
+			<button onclick="level(<?=$detailata['id']?>, <?=$detailata['v']+1?>)">+</button>
+			<span><?=$detailata['v']?></span>
+			<button onclick="level(<?=$detailata['id']?>, <?=$detailata['v']-1?>)">-</button>
+		</span>
+		<a href="/BL/public/ltag/index/circle?circleId=6">标签管理</a>
+		<?php foreach($tags as $k=>$v):?><span class="tag"><?=$v['tagname']?></span><?php endforeach;?>
+        <input class="form-control" type="text" id="tags-input" value="">
+	</div>
+
+	<div class="h5"></div>
+
+	<div class="fixbox">
+		
+		<!-- a -->
+		<span class="w100">a（书面）:</span><input type="text" id="input_a" value="<?=$detailata['a']?>" oninput="query()" onkeypress="detail()">
+		<input type="text" id="input_c" value="<?=$detailata['c']?>">
+		<br>
+
+		<div class="h5"></div>
+
+		<!-- 单词变形 -->
+		<?php
+			// 单词变形
+			if($Baicizhan->listDeformation()){
+				echo '<span class="w100">变形:</span>';
+				echo '<div style="display:inline-block; background:#dcdcdc; border-radius: 4px; padding: 10px 15px; border: 1px solid #cac9c9; color:#f00;">';
+				foreach ($Baicizhan->listDeformation() as $k => $v) {
+			 		echo '<b>'.$k.' --> '.$v.'</b><br>';
+				}
+				echo '</div><br>';
+			}
+		?>
+
+		<div class="h5"></div>
+
+		<!-- 词根(s) -->
+		<?php
+			// 词根（百词斩）
+			$root = $Baicizhan->getRoot();
+			if($root){
+				echo '<span class="w100">Root1:</span><b style="color:#a61308;">'.$root.'</b><br>';
+			}
+
+			// 词根（扇贝付费）
+			$sbJson = json_decode($detailata['sb_roots'], true);
+			// print_r($sbJson);
+			if($sbJson){
+				echo '<span class="w100">Root2:</span>';
+				echo '<div style="display:inline-block; background:#dcdcdc; border-radius: 4px; padding: 10px 15px; border: 1px solid #cac9c9; width: 787px;">';
+				foreach($sbJson as $v2){
+					echo '<b style="color:#000; font-size:14px; ">'.$v2['content'].'</b> '.$v2['meaning_cn'].'<br>';
+					echo '助记：<b style="color:#a61308">'.$v2['vocabulary'].($v2['note'] ? ' = '.$v2['note'] : '').'</b><br>';
+					echo '同词根 <div style="display:inline-block; vertical-align: top;">';
+					foreach ($v2['representatives'] as $k3 => $v3) {
+						if($v3['word'] != $detailata['a']){
+							echo '<b>'.$v3['word'].'</b>'.($v3['note'] ? ' = '.$v3['note'] : '').'<br>';
+						}
+					}
+					echo '</div><br>';
+					// print_r($v2);
+				}
+				echo '</div><br>';
+			}
+		?>
+
+		<div class="h5"></div>
+
+		<!-- 英文解释 -->
+		<?php
+			// 英文解释
+			if(sizeof($Baicizhan->listEnglishDefinitions()) > 0){
+				echo '<span class="w100">defin_en:</span>';
+				echo '<div style="display:inline-block; background:#dcdcdc; border-radius: 4px; padding: 10px 15px; border: 1px solid #cac9c9; width: 787px;">';
+				foreach ($Baicizhan->listEnglishDefinitions() as $k => $v) {
+					echo '<b style="color:#0e79c7;">['.$v[0].'] '.$v[1].'</b><br>';
+				}
+				echo '</div><br>';
+			}
+		?>
+
+		<div class="h5"></div>
+
+		<!-- 短语 -->
+		<?php 
+			 // 短语
+			if($Baicizhan->listPhrase()){
+				echo '<ul class="phrase">';
+				foreach ($Baicizhan->listPhrase() as $k => $v) {
+					echo '<li><span style="background:yellow;">'.$v[0]['data'].'</span>'.$v[1]['data'].'</li>';
+				}
+				echo '</ul>';
+			}
+		?>
+
+		<div class="h5"></div>
+		
+		<!-- 解释 1 -->
+		<span class="w100">b（解释）:</span><textarea id="input_b"><?php
+			// 中文解释
+			$d5 = '';
+			foreach ($Baicizhan->listDefinitions() as $k => $v) {
+				$d5 .= $v."\r\n";
+			}
+			echo $detailata['b'];
+		?></textarea>
+		<!-- 解释 2 -->
+		<textarea id="input_b2"><?=$detailata['b2']?></textarea>
+		<!-- 解释 3 -->
+		<textarea id="input_b3"><?=$detailata['b3'] ? $detailata['b3'] : $d5?></textarea>
+		<br>
+
+		<!-- tools -->
+		<div class="tools">
+			<button onclick="api()">API</button>
+			<button onclick="clearname()">C</button>
+			<button onclick="update()" id="updateBtn">Update</button>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<button onclick="document.getElementById('audio').play()">play()</button>
+			<button onclick="document.getElementById('audio').pause()">pause()</button>
+		</div>
+		
+		<!-- description -->
+		<span class="w100">desc:</span><textarea id="input_desc" autofocus="true"><?=$detailata['description']?></textarea>
+		<pre><?php
+			// 形近词
+			foreach ($Baicizhan->listSimilarForm() as $k => $v) {
+		 		echo '<a target="_blank" href="__SITE_URL__/remember/English/detail?kw='.$v.'">'.$v."</a>\r\n";
+			}
+		?>
+		</pre>
+		<br>
+
+		<span class="w100">类型:</span><input id="input_type" value="{$detailata.type}">
+		<br>
+
+		<span class="w100">来源:</span><input id="input_source" value="{$detailata.source}">
+
+
+	</div>
+
+	<div style="clear: both;"></div>
+</div>
+</body>
+</html>

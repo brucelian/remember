@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>K·K 音标发音练习</title>
+<link rel="shortcut icon" href="/BL/public/static/img/remember/help.png" type="image/x-icon">
+<link rel="stylesheet" href="__CSS__/ireset.css">
+<link rel="stylesheet" href="__STATIC__/layui/css/layui.css">
+<style type="text/css">
+	body {
+		background-color: #fff;
+		margin: 40px;
+		font: 13px/20px normal Helvetica, Arial, sans-serif;
+		color: #4F5155;
+	}
+
+	ul.symbolbox{
+		/*display:block;*/
+		background:#dcdcdc;
+		color:#333;
+	}
+
+	ul.height_symbol {
+		background: red;
+	}
+
+	.symbolbox li{
+		float: left;
+		/*height: 300px;*/
+		/*width: 250px;*/
+		/*background: yellow;*/
+		margin:0 20px 0 0;
+	}
+
+	.text {
+		font-family: Basemic;
+		font-size: 30px;
+		line-height: 30px;
+		height: 36px;
+	}
+
+	.sound {
+		width: 30px;
+		height: 30px;
+		display: inline-block;
+		background: url(__STATIC__/img/Remember/sound-play.gif)
+	}
+
+	.description {
+		font-size: 12px;
+		/*line-height: 14px;*/
+		height: 40px;
+	}
+
+	.img {
+		width:200px;
+		height: 130px;
+	}
+
+	#container{
+		margin: 120px 10px 10px;
+		padding: 15px;
+		border: 1px solid #D0D0D0;
+	}
+</style>
+<script src="__JS__/jquery2.min.js"></script>
+<script src="__STATIC__/layui/layui.js"></script>
+<script type="text/javascript" charset="utf-8">
+
+	// 全局快捷键 Ctrl + Y 快速入库
+	// document.onkeypress = function(e) {
+	// 	if(e.ctrlKey && e.keyCode==25){
+	// 		enter();
+	// 	}
+	// }
+
+	function play(n) {
+		$('#audio').attr('src','__STATIC__/mp3/'+ n +'.mp3');
+	}
+</script>
+</head>
+<body>
+<div>
+	<ul class="symbolbox height_symbol">
+		<?php foreach($height_symbol as $k=>$v):?>
+		<li>
+			<p class="text" onclick="play(0)">{$v['symbol']}</p>
+			<p><img src="__STATIC__/img/Remember/KK/{$v.mouth_img}" class="img"></p>
+			<p class="description">{$v['description']}</p>
+			<!-- <span class="sound"></span> -->
+		</li>
+		<?php endforeach; ?>
+	</ul>
+
+	<div style="clear: both;"></div>
+</div>
+<br>
+<div>
+	<ul class="symbolbox">
+		<?php foreach($symbol as $k=>$v):?>
+		<li>
+			<div>
+				<span class="text" onclick="play(0)">{$v['symbol']}</span>
+				<!-- <span class="sound"></span> -->
+			</div>
+		</li>
+		<?php endforeach; ?>
+	</ul>
+</div>
+<div id="container">
+	<br>
+	<audio id="audio" src="someaudio.wav" controls autoplay preload></audio>
+</div>
+</body>
+</html>

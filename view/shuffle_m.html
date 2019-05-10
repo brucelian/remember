@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<title>洗牌记忆</title>
+<link rel="shortcut icon" href="/BL/public/static/img/remember/help.png" type="image/x-icon">
+<link rel="stylesheet" href="__CSS__/ireset.css">
+<link rel="stylesheet" href="__STATIC__/layui/css/layui.css">
+<link rel="stylesheet" href="__STATIC__/css/remember/shuffle_m.css">
+<script src="__JS__/jquery2.min.js"></script>
+<script src="__STATIC__/layui/layui.js"></script>
+<script src="__STATIC__/js/remember/common.js"></script>
+<script>
+	//定义js中的url路径
+	var site_url = '__SITE_URL__';
+	var mp3_path = '__STATIC__/mp3/English/';
+	var supply_url = (<?=$bookId ? 1 : 0?> ? '__SITE_URL__/Remember/English/listBookWord' : '__SITE_URL__/Remember/English/listRand');
+	var bookId = <?=($bookId ? $bookId : 'null')?>;
+	var tagidArr = [<?php 
+	if($tag_ids){
+		$arr = explode("_", $tag_ids); 
+		echo implode(",", $arr);
+	} 
+	?>];
+</script>
+</head>
+<body>
+<input type="hidden" id="act_id">
+<audio id="audio" src="" loop preload autoplay></audio>
+<button id="zhanBtn" onclick="zhan()">斩</button>
+<button id="daiBtn" onclick="dai()">待</button>
+<div id="container">
+	<!-- 随机出题 -->
+	<div class="rand">
+		<div class="h2"><span id="time">0</span> 秒</div>
+		<div id="show">
+			<p id="word"></p>
+			<p id="symbol"></p>
+		</div>
+		<pre id="tips" style="min-height: 300px;"></pre>
+		<div>
+			<button onclick="hit(0);">认　识</button>
+			<button onclick="hit(1);">不认识</button>
+		</div>
+
+		<div id="count"></div>
+		<button class="change" onclick="change()">撤销</button>
+		<button onclick="pass();">跳过</button>
+
+		
+		<button onclick="document.getElementById('audio').play()">播放</button>
+	</div>
+
+	<div id="bottom">
+		<ul></ul>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>搜索“<?=$keyword?>”结果 - 综合</title>
+<link rel="stylesheet" href="__CSS__/ireset.css">
+<link rel="stylesheet" href="__CSS__/bootstrap.min.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="__CSS__/blog.css">
+<link rel="stylesheet" href="__CSS__/common.css">
+<style type="text/css">
+
+.header {
+	background: #000;
+}
+
+/* 右侧栏 */
+.right_side{float: right; width: 380px; box-shadow: 0 0 8px #D0D0D0; background: #fff; padding: 20px; border: 1px solid #D0D0D0; }
+.right_side .category a{display: inline-block; }
+.right_side .tagbtn{margin: 0 5px 5px 0; padding: 4px 8px;}
+.right_side .actCat{background: red;}
+
+/* 主体 */
+#left_content{width: 900px; margin-top: 20px; background: #fff;}
+
+</style>
+<script src="__JS__/jquery.min.js"></script>
+<script>
+	function unlike(id, t){
+		$.get('__SITE_URL__/BlackHole/base/unlike/'+ id, function(d) {
+			if(d==1){
+				$(t).parent().parent().hide()
+			}
+		})
+	}
+	function under(id, t){
+		$.get('__SITE_URL__/BlackHole/base/settag/'+ id +'/99999', function(d) {
+			if(d==1){
+				$(t).parent().parent().hide()
+			}
+		})
+	}
+</script>
+</head>
+<body>
+<div class="header">
+</div>
+
+<div id="container">
+	<div class="right_side">
+		<h3>搜索<span style="color:red;">“<?=$keyword?>”</span>结果</h3>
+	</div>
+
+	<div id="left_content">
+		<ul class="article_ul">
+			{foreach $resulte as $v}
+			<li class="">
+				<i class="icon" onclick="$(this).parent().hide()"></i>
+				<?=$v['type']?('<i class="icon_'.$v['type'].'"></i>'):''?>
+				<?=$v['source']?('<i><img src="'.config('sys_info')[$v['source']]['icon'].'" width="20" height="20"></i>'):''?>
+				<span class="filemtime"><?=$v['smarttime']?></span>
+				<!-- 标签 -->
+				<span class="tags"><?php foreach ($v['tags'] as $k2 => $v2):?>
+					<span><?=$v2['tagname']?></span>
+				<?php endforeach;?></span>
+				<span class="thumb">
+				<?php if($v['thumb']):?>
+					<img src="__STATIC__/img/LOS/thumb/{$v.thumb}">
+				<?php elseif($v['type']=='image'):?>
+					<!-- <img src="__SITE_URL__/api/image/<?=$v['id']?>/w_120:h_80"> -->
+					<img src="">
+				<?php endif;?>
+				</span>
+				<a onclick="window.open('__SITE_URL__/los/{$Request.controller}/detail?id=<?=$v['id']?>')" class="<?php if(isset($v['is_del']) && $v['is_del']){echo 'is_del ';}?>"><?=$v['title']?></a>
+				<span class="star"></span>
+				<span class="comment"></span>
+			</li>
+			{/foreach}
+		</ul>
+	</div>
+<div>
+</body>
+</html>

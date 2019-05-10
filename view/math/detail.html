@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>详情 - 记忆学习</title>
+<link rel="shortcut icon" href="/BL/public/static/img/remember/help.png" type="image/x-icon">
+<link rel="stylesheet" href="__CSS__/ireset.css">
+<link rel="stylesheet" href="__STATIC__/layui/css/layui.css">
+<style type="text/css">
+	body {background-color: #fff; margin: 10px; font: 13px/20px normal Helvetica, Arial, sans-serif; color: #4F5155; }
+	
+	#container{
+		margin: 10px 0;
+		padding: 15px;
+		border: 1px solid #D0D0D0;
+		background: #EEE;
+	}
+
+	#fixbox button {width: 30px;}
+
+	pre#detail {width: 90%; overflow-x: scroll;}
+
+	#container ul{display:block; background:#dcdcdc; color:#333; }
+
+	#container li{display:inline-block; }
+
+	.fixbox .tools {height: 38px; margin-left: 65px;}
+	.fixbox button {padding: 0 10px; height: 30px; vertical-align: bottom;}
+	.fixbox pre {display: inline-block; width: 500px; }
+
+	textarea {width:260px; height: 140px;}
+	#input_desc {color: red;}
+
+	.tags span {float: right; }
+	.s1{margin-right:20px; }
+	.s2{margin-right:20px; }
+	.w100 {width: 65px; display: inline-block;}
+
+	/* 标签信息 */
+	span.tag {color: #666; border: 1px solid #ccc; padding: 4px 5px; font-size: 12px; line-height: 16px; font-weight: 400; border-radius: 2px; margin-right: 5px; }
+
+	/* 参考标签 */
+	#quicktag_box .queue{margin-top: 5px;}
+	#quicktag_box .tagbtn{font-size: 14px; margin: 2px 2px 2px 0; padding: 0 2px}
+	#quicktag_box .color_1 {border-color: #FF00FF; color:#FF00FF;}
+	#quicktag_box .color_2 {border-color: #22BB92; color:#22BB92;}
+	#quicktag_box .color_9 {border-color: #BBBBBB; color:#BBBBBB;}
+	#quicktag_box .color_99 {border-color: #FF0000; color:#FF0000;}
+	#quicktag_box .act {background:#2F8095; color:#fff}
+	#quicktag_box .btn-default:hover{background-color: none;}
+
+	.img img{
+		height: 225px;
+	}
+</style>
+<script src="__JS__/jquery2.min.js"></script>
+<script src="__STATIC__/layui/layui.js"></script>
+<script src="__JS__/ltag.js"></script>
+<script type="text/javascript" charset="utf-8">
+	var ltag = new Ltag({
+		"insert_tag_url":    "__SITE_URL__/ltag/index/insertTag",
+		"insert_circle_url": "__SITE_URL__/ltag/index/insertTagCircle",
+		"insert_objtag_url": "__SITE_URL__/ltag/index/insertObjTag",
+		"delete_objtag_url": "__SITE_URL__/ltag/index/deleteObjTag",
+		"app_id":    6,				// TODO ？？？？？？？？？？？？？？？？？
+		"circle_id": 9
+	});
+
+
+	$(document).ready(function(){
+		$('.tagbtn').click(function(){
+			if($(this).hasClass('act')){
+				console.log('del')
+				ltag.del_tags(this)
+			}else{
+				console.log('add')
+				ltag.quickAddTags(this)
+			}
+		})
+
+		// 注册【添加标签】监听函数
+		$('#tags-input').blur(function(){
+			ltag.add_tags(this)
+		})
+	})
+
+	// 修改记忆度
+	function level(id, v){
+		$.get('__SITE_URL__/Remember/English/updateV?id='+ id +'&v='+ v, function(d) {
+			if(d==1){
+				location.reload();
+			}
+		})
+	}
+
+	// 有道 API 查询
+	function api() {
+		var q = $('#input_a').val();
+		$.get('__SITE_URL__/Remember/Base/youdao_api?q=' + q, function (d) {
+			console.log(d);
+			$('#input_c').val(d['us-phonetic-symbol']);
+			var content = '';
+			// console.log('len====>', sizeof(d['custom-translation']['translation']))
+			if (d['custom-translation']['translation'].length) {
+				for(var i=0; i < d['custom-translation']['translation'].length; i++){
+					content = content + d['custom-translation']['translation'][i]['content'] + "\r\n";
+				}
+			} else {
+				content = d['custom-translation']['translation']['content'];
+			}
+			
+			$('#input_b').val(content);
+		})
+	}
+
+	// 更新
+ 	function update(){
+
+ 		$('#updateBtn').css('background','red')
+
+ 		var obj = {};
+ 		obj.id = <?=$detailata['id']?>;
+ 		obj.a = $('#input_a').val();
+ 		obj.b = $('#input_b').val();
+ 		obj.b2 = ue.getContent();
+ 		obj.b3 = $('#input_b3').val();
+ 		obj.c = $('#input_c').val();
+ 		obj.description = $('#input_desc').val();
+ 		obj.type = $('#input_type').val();
+ 		obj.source = $('#input_source').val();
+
+ 		if(obj.a){
+ 			$.post('__SITE_URL__/Remember/Base/update', obj, function(d) {
+ 				if(d==1){
+ 					$('#updateBtn').css('background','#ddd')
+ 					// location.reload
+ 				}else{
+ 					alert('error!!!!!!!!!!!!!!!!!!!!!')
+ 				}
+ 			})
+ 		}
+ 	}
+
+ 	// 插入做题记录
+ 	function insertLog(){
+
+ 		var obj = {};
+ 		obj.id = <?=$detailata['id']?>;
+ 		obj.score = $('#score').val();
+ 		obj.duration = $('#duration').val();
+ 		obj.inputtime = $('#inputtime').val();
+ 		obj.refer = $('#refer').val();
+ 		obj.description = $('#description').val();
+
+ 		if(obj.id && obj.score && obj.description){
+ 			$.post('__SITE_URL__/Remember/Math/insertLearnLog', obj, function(d) {
+ 				if(d > 1){
+ 					location.reload()
+ 				}else{
+ 					alert('error!!!!!!!!!!!!!!!!!!!!!')
+ 				}
+ 			})
+ 		}
+ 	}
+
+	// 删除记录
+	function del() {
+		if(confirm("确实要删除吗?")){
+			$.get('__SITE_URL__/Remember/Base/remove?id=<?=$detailata['id']?>', function (d) {
+				console.log(d);
+				if (d==1) {
+					window.close();
+				}
+			})
+		}
+	}
+
+	var count_leartime = 0
+	var interval_handle = setInterval(leartime, 1000);
+	function leartime() {
+		count_leartime++;
+		var m = count_leartime > 60 ? (parseInt(count_leartime / 60) % 60)+'分' : ''
+		var s = (count_leartime % 60) + '秒';
+		$('#durationBtn').text(m + s);
+		$('#duration').val(Math.ceil(count_leartime /60));
+	}
+	// 复位计时
+	function resetLeartime() {
+		count_leartime = 0;
+	}
+	// 复位计时
+	function stopLeartime() {
+		clearInterval(interval_handle);
+	}
+</script>
+</head>
+<body>
+<div id="container">
+	<!-- 标签信息 -->
+	<div class="navbar-form" id="tags_area2">
+		<input type="hidden" id="id" name="id" value="<?=$detailata['id']?>" />
+		<button onclick="del()">删除</button>
+		<b>[ <?=$detailata['a']?> ]</b>
+		<span id="fixbox">
+			<button onclick="level(<?=$detailata['id']?>, <?=$detailata['v']+1?>)">+</button>
+			<span><?=$detailata['v']?></span>
+			<button onclick="level(<?=$detailata['id']?>, <?=$detailata['v']-1?>)">-</button>
+		</span>
+		<a href="/BL/public/ltag/index/circle?circleId=9">标签管理</a>
+	<?php foreach($tags as $k=>$v):?><span class="tag"><?=$v['tagname']?></span><?php endforeach;?>
+        <input class="form-control" type="text" id="tags-input" autofocus="true" value="">
+	</div>
+
+	<div id="quicktag_box">
+		<div class="queue">
+<?php $flag=0;?>
+<?php foreach($quicktag as $tag1){ ?>
+<?php if($tag1['listorder']%100==0 && $flag++){ ?>
+		</div>
+		<div class="queue">
+<?php }?>
+			<button class="btn btn-default tagbtn btnid_<?=$tag1['tag_id']?> color_<?=$tag1['color'];?>" data-tag_id='<?=$tag1['tag_id']?>'><?=$tag1['tagname']?></button>
+<?php }?>
+		</div>
+    </div>
+    <script type="text/javascript">
+	 	// 将tag染色
+	 	var t1 = "<?php foreach($tags as $k=>$v){echo $v['tag_id'].'|';}?>";
+		var t2 = t1.split('|');
+	 	for(var i in t2){
+	 		$('.btnid_'+ t2[i]).addClass('act')
+	 	}
+	</script>
+
+	<br>
+
+	<div class="fixbox">
+		标识：<input type="text" id="input_a" value="<?=$detailata['a']?>">
+		<input type="hidden" id="input_c">
+		
+		<!-- 题目 -->
+
+		<!-- 加载编辑器的容器 -->
+	    <script id="editorbox" name="content" type="text/plain"><?=$detailata['b2']?></script>
+	    <!-- 配置文件 -->
+	    <script type="text/javascript" src="/BL/public/static/ueditor1.5/ueditor.config.js"></script>
+	    <!-- 编辑器源码文件 -->
+	    <script type="text/javascript" src="/BL/public/static/ueditor1.5/ueditor.all.js"></script>
+	    <!-- 插件 -->
+	    <script type="text/javascript" src="/BL/public/static/ueditor1.5/third-party/kityformula-plugin/addKityFormulaDialog.js"></script>
+	    <script type="text/javascript" src="/BL/public/static/ueditor1.5/third-party/kityformula-plugin/getKfContent.js"></script>
+	    <script type="text/javascript" src="/BL/public/static/ueditor1.5/third-party/kityformula-plugin/defaultFilterFix.js"></script>
+	    <!-- 实例化编辑器 -->
+	    <script type="text/javascript">
+	        var ue = UE.getEditor('editorbox', {
+			    iframeCssUrl : '/BL/public/static/css/ueditor_iframe.css',
+			    initialFrameHeight : 120,
+			    toolbars: [
+		          [
+		              'source', '|',
+		              'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'blockquote', 'kityformula', '|' ,
+		              'removeformat', 'pasteplain', '|', 
+		              'insertorderedlist', 'insertunorderedlist', '|',
+		              'forecolor', 'backcolor', 'paragraph', 'fontfamily', 'fontsize', '|', 
+		              'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify'
+		          ],[
+		              'simpleupload', 'insertimage', 'wordimage', 'scrawl', 'insertcode', '|',
+		              'drafts', '|',
+		              'template', 'horizontal', '|', 'date', 'time', '|', 'link', 'anchor' ]
+		        ],
+		        elementPathEnabled: false,
+		        wordCount: false
+			});
+	    </script>
+		<br>
+
+		<span class="w100">（b）:</span><input id="input_b"><?=$detailata['b']?>
+		<input id="input_b3">
+
+		<div class="tools">
+			<button onclick="update()" id="updateBtn">Update</button>
+		</div>
+
+		<span class="w100">desc:</span><textarea id="input_desc"><?=$detailata['description']?></textarea>
+		<br>
+
+		<span class="w100">类型:</span><input id="input_type" value="{$detailata.type}">
+		<br>
+
+		<span class="w100">来源:</span><input id="input_source" value="{$detailata.source}">
+
+		{foreach $learLogs as $log}
+			<textarea class="learLog" disabled>
+得分：【{$log['score']}】
+耗时：{$log['duration']}
+
+日期：{$log['inputtime']}
+
+
+{$log['description']}
+			</textarea>
+		{/foreach}
+		
+		<div style="display: inline-block;">
+			<span class="w100">得分：</span><input type="text" id="score"><br>
+			<span class="w100">耗时：</span><input type="text" id="duration"> <button onclick="stopLeartime()" id="durationBtn">0秒</button> <button onclick="resetLeartime()" id="resetLeartimeBtn">复位</button><br>
+			<span class="w100">做题日期：</span><input type="text" id="inputtime" value="<?=date('Y-m-d H:m:s', time());?>"><br>
+			<span class="w100">草稿：</span><input type="text" id="refer"><br>
+			<span class="w100">描述：</span><input type="text" id="description"><button onclick="insertLog()" id="updateBtn">InsertLog</button>
+		</div>
+	</div>
+</div>
+</body>
+</html>

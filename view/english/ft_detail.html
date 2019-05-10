@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title><?=$detailata['title_cn']?> - FT双语阅读</title>
+<link rel="shortcut icon" href="/BL/public/static/img/remember/help.png" type="image/x-icon">
+<link rel="stylesheet" href="__CSS__/ireset.css">
+<link rel="stylesheet" href="__STATIC__/layui/css/layui.css">
+<style type="text/css">
+	body {background-color: #fff; margin: 10px; font: 13px/20px normal Helvetica, Arial, sans-serif; color: #4F5155; }
+	
+	#container{
+		margin: 10px 0;
+		padding: 15px;
+		border: 1px solid #D0D0D0;
+		background: #EEE;
+	}
+
+	#fixbox button {width: 30px;}
+
+	pre#detail {width: 90%; overflow-x: scroll;}
+
+	#container ul{display:block; background:#dcdcdc; color:#333; }
+
+	#container li{display:inline-block; }
+
+	.fixbox .tools {height: 38px;}
+	.fixbox button {padding: 0 10px; height: 30px; vertical-align: bottom;}
+	.fixbox pre {display: inline-block; width: 500px; }
+
+	textarea {width:600px; height: 140px;}
+	#input_desc {color: red;}
+
+	.tags span {float: right; }
+	.s1{margin-right:20px; }
+	.s2{margin-right:20px; }
+	.w100 {width: 65px; display: inline-block;}
+
+	/* 标签信息 */
+	span.tag {color: #666; border: 1px solid #ccc; padding: 4px 5px; font-size: 12px; line-height: 16px; font-weight: 400; border-radius: 2px; margin-right: 5px; }
+
+	/* 参考标签 */
+	#quicktag_box .queue{margin-top: 5px;}
+	#quicktag_box .tagbtn{font-size: 14px; margin: 2px 2px 2px 0; padding: 0 2px}
+	#quicktag_box .color_1 {border-color: #FF00FF; color:#FF00FF;}
+	#quicktag_box .color_2 {border-color: #22BB92; color:#22BB92;}
+	#quicktag_box .color_9 {border-color: #BBBBBB; color:#BBBBBB;}
+	#quicktag_box .color_99 {border-color: #FF0000; color:#FF0000;}
+	#quicktag_box .act {background:#2F8095; color:#fff}
+	#quicktag_box .btn-default:hover{background-color: none;}
+
+	.img img{
+		height: 225px;
+	}
+</style>
+<script src="__JS__/jquery2.min.js"></script>
+<script src="__STATIC__/layui/layui.js"></script>
+<script src="__JS__/ltag.js"></script>
+<script type="text/javascript" charset="utf-8">
+	var ltag = new Ltag({
+		"insert_tag_url":    "__SITE_URL__/ltag/index/insertTag",
+		"insert_circle_url": "__SITE_URL__/ltag/index/insertTagCircle",
+		"insert_objtag_url": "__SITE_URL__/ltag/index/insertObjTag",
+		"delete_objtag_url": "__SITE_URL__/ltag/index/deleteObjTag",
+		"app_id":    6,				// ？？？？？？？？？？？？？？？？？
+		"circle_id": 6
+	});
+
+	$(document).ready(function(){
+		$('.tagbtn').click(function(){
+			if($(this).hasClass('act')){
+				console.log('del')
+				ltag.del_tags(this)
+			}else{
+				console.log('add')
+				ltag.quickAddTags(this)
+			}
+		})
+
+		// 注册【添加标签】监听函数
+		$('#tags-input').blur(function(){
+			ltag.add_tags(this)
+		})
+	})
+
+	// 更新
+ 	function update(){
+
+ 		$('#updateBtn').css('background','red')
+
+ 		var obj = {};
+ 		obj.id = <?=$detailata['id']?>;
+ 		obj.description = $('#input_desc').val();
+
+ 		if(obj.id && obj.description){
+ 			$.post('__SITE_URL__/Remember/English/updateFTComment', obj, function(d) {
+ 				if(d==1){
+ 					$('#updateBtn').css('background','#ddd')
+ 				}else{
+ 					alert('error!!!!!!!!!!!!!!!!!!!!!')
+ 				}
+ 			})
+ 		}
+
+ 	}
+
+	// 删除记录
+	function del() {
+		if(confirm("确实要删除吗?")){
+			$.get('__SITE_URL__/Remember/Base/xxxxxxxxxxxxxxxx?id=<?=$detailata['id']?>', function (d) {
+				console.log(d);
+				if (d==1) {
+					window.close();
+				}
+			})
+		}
+	}
+
+	function clockIn() {
+		$.get('__SITE_URL__/Remember/English/FTclockIn?id=<?=$detailata['id']?>&duration='+ Math.ceil(count_leartime /60), function(d) {
+			if(d > 0){
+				alert('打卡成功！['+ d +']')
+			}else{
+				alert('error!!!!!!!!!!!!!!!!!!!!!')
+			}
+		})
+	}
+
+	var count_leartime = 0
+	var interval_handle = setInterval(leartime, 1000);
+	function leartime() {
+		count_leartime++;
+		var m = count_leartime > 60 ? (parseInt(count_leartime / 60) % 60)+'分' : ''
+		var s = (count_leartime % 60) + '秒';
+		$('#clockInBtn').text('打卡！（'+ m + s +'）');
+	}
+	// 复位计时
+	function resetLeartime() {
+		count_leartime = 0;
+	}
+	// 停止计时
+	function stopLeartime() {
+		clearInterval(interval_handle);
+	}
+</script>
+</head>
+<body>
+<div id="container">
+
+	<!-- 标签信息 -->
+	<div class="navbar-form" id="tags_area2">
+		<input type="hidden" id="id" name="id" value="<?=$detailata['id']?>" />
+		<button onclick="del()">删除</button>
+		<span id="fixbox">
+		</span>
+		<a href="/BL/public/ltag/index/circle?circleid=6">标签管理</a>
+        <input class="form-control" type="text" id="tags-input" autofocus="true" value="">
+	</div>
+
+	<div class="fixbox">
+		<style>
+			h1 {text-align: center; font-size: 17px; line-height: 24px; margin-bottom: 30px; color: #000;}
+			.info {text-align: center;}
+			#story-body-container {
+				width: 1100px;
+				margin:0 auto;
+				font-size: 15px;
+				font-family: Times New Roman;
+				word-spacing: 3px;
+				letter-spacing: 0.5px;
+				color: #000;
+			}
+
+			.leftp {
+				width: 580px;
+				float: left;
+			}
+
+			.rightp {
+				width: 500px;
+				float: right;
+				/*position: absolute;*/
+				/*left: 500px;*/
+			}
+			.clearfloat {
+				clear: both;
+				border-bottom: 1px solid #d4d4d4;
+				margin-bottom: 5px;
+   				padding-top: 5px;
+			}
+		</style>
+
+		<h1><?=$detailata['title_en']?><br><?=$detailata['title_cn']?></h1>
+		<p class="info"><?=$detailata['publictime']?>&nbsp;&nbsp;&nbsp;&nbsp;<?=substr($detailata['author'],0)?></p>
+
+		<?= substr($detailata['content'],0,-100)?>
+		<script>
+			// var leftps = $('#story-body-container div');
+			var leftps = $('.leftp, .rightp');
+			for(var i=0; i<leftps.length; i++){
+			  leftps[i].contentEditable = true;
+			}
+		</script>
+
+		<textarea id="input_desc"><?=$detailata['comment']?></textarea>
+		<button onclick="update()" id="updateBtn">更新</button>
+		<button onclick="clockIn()" id="clockInBtn">打卡！</button>
+		<button onclick="stopLeartime()" id="durationBtn">暂停（离开）</button> <button onclick="resetLeartime()" id="resetLeartimeBtn">复位</button><br>
+	</div>
+
+</div>
+<style>
+	.img li {float: left; margin-right: 20px;}
+	.phrase {border:1px solid #ddd;}
+</style>
+</body>
+</html>
